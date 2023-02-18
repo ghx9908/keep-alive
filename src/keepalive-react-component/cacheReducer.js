@@ -27,6 +27,14 @@ function cacheReducer(cacheStates = {}, { type, payload }) {
           status: cacheTypes.CREATED, //缓存的状态是创建成功
         },
       }
+    case cacheTypes.DESTROY: //清除缓存
+      return {
+        ...cacheStates,
+        [payload.cacheId]: {
+          ...cacheStates[payload.cacheId],
+          status: cacheTypes.DESTROY,
+        },
+      }
     default:
       return cacheStates
   }

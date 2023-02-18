@@ -1,5 +1,6 @@
 import { useContext, useRef, useEffect } from "react"
 import CacheContext from "./CacheContext"
+import * as cacheTypes from "./cache-types"
 function withKeepAlive(
   OldComponent,
   { cacheId = window.location.pathname, scroll = false }
@@ -20,7 +21,11 @@ function withKeepAlive(
     useEffect(() => {
       let cacheState = cacheStates[cacheId]
       //真实DOM已经存在了
-      if (cacheState && cacheState.doms) {
+      if (
+        cacheState &&
+        cacheState.doms &&
+        cacheState.status !== cacheTypes.DESTROY
+      ) {
         let doms = cacheState.doms
         doms.forEach((dom) => ref.current.appendChild(dom))
         if (scroll) {
@@ -31,10 +36,10 @@ function withKeepAlive(
       } else {
         mount({
           cacheId,
-          element: <OldComponent {...props} />,
+          element: <OldComponent {...props} dispatch={dispatch} />,
         })
       }
-    }, [cacheStates, mount, props])
+    }, [cacheStates, mount, props, dispatch])
     return <div ref={ref} id={`keepalive_${cacheId}`} />
   }
 }

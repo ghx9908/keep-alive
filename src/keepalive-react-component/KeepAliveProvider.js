@@ -7,7 +7,14 @@ function KeepAliveProvider(props) {
   let [cacheStates, dispatch] = useReducer(cacheReducer, {})
   const mount = useCallback(
     ({ cacheId, element }) => {
-      if (!cacheStates[cacheId]) {
+      if (cacheStates[cacheId]) {
+        let cacheState = cacheStates[cacheId]
+        if (cacheState.status === cacheTypes.DESTROY) {
+          let doms = cacheState.doms //获取到老的真实DOM
+          doms.forEach((dom) => dom.parentNode.removeChild(dom)) //移除掉老的真实DOM
+          dispatch({ type: cacheTypes.CREATE, payload: { cacheId, element } }) //重新派发
+        }
+      } else {
         dispatch({ type: cacheTypes.CREATE, payload: { cacheId, element } }) //创建成功
       }
     },
@@ -27,25 +34,30 @@ function KeepAliveProvider(props) {
       value={{ cacheStates, dispatch, mount, handleScroll }}
     >
       {props.children}
-      {Object.values(cacheStates).map(({ cacheId, element }) => (
-        <div
-          id={`cache_${cacheId}`}
-          key={cacheId}
-          // 如果给原生dom组件添加了ref，那么当此真实DOD渲染到页面后会执行回调函数
-          ref={(divDom) => {
-            let cacheState = cacheStates[cacheId]
-            if (divDom && !cacheState.doms) {
-              let doms = Array.from(divDom.childNodes)
-              dispatch({
-                type: cacheTypes.CREATED,
-                payload: { cacheId, doms: doms },
-              })
-            }
-          }}
-        >
-          {element}
-        </div> //divDOM儿子们就是这个element渲染出来的真实DOM
-      ))}
+      {Object.values(cacheStates)
+        .filter((cacheState) => cacheState.status !== cacheTypes.DESTROY)
+        .map(({ cacheId, element }) => (
+          <div
+            id={`cache_${cacheId}`}
+            key={cacheId}
+            // 如果给原生dom组件添加了ref，那么当此真实DOD渲染到页面后会执行回调函数
+            ref={(divDom) => {
+              let cacheState = cacheStates[cacheId]
+              if (
+                divDom &&
+                (!cacheState.doms || cacheState.status === cacheTypes.DESTROY)
+              ) {
+                let doms = Array.from(divDom.childNodes)
+                dispatch({
+                  type: cacheTypes.CREATED,
+                  payload: { cacheId, doms: doms },
+                })
+              }
+            }}
+          >
+            {element}
+          </div> //divDOM儿子们就是这个element渲染出来的真实DOM
+        ))}
     </CacheContext.Provider>
   )
 }
