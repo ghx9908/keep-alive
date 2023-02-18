@@ -1,5 +1,5 @@
 import { Route, Link, Routes } from "react-router-dom"
-import { KeepAliveProvider, withKeepAlive } from "keepalive-react-component"
+import { KeepAliveProvider, withKeepAlive } from "./keepalive-react-component"
 import Home from "./components/Home"
 import UserList from "./components/UserList"
 import UserAdd from "./components/UserAdd"
