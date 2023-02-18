@@ -1,22 +1,22 @@
 import { useContext, useRef, useEffect } from "react"
+import { v4 } from "uuid"
 import CacheContext from "./CacheContext"
 import * as cacheTypes from "./cache-types"
-function withKeepAlive(
-  OldComponent,
-  { cacheId = window.location.pathname, scroll = false }
-) {
+function withKeepAlive(OldComponent, { cacheId = v4(), scroll = false }) {
   return function (props) {
     const { mount, cacheStates, handleScroll, dispatch } =
       useContext(CacheContext)
     const ref = useRef(null)
     useEffect(() => {
+      let onScroll = handleScroll.bind(null, cacheId)
       if (scroll) {
         ref.current.addEventListener(
           "scroll",
-          handleScroll.bind(null, cacheId),
+          onScroll,
           true //捕获阶段的接听
         )
       }
+      return ref.current.removeEventListener("scroll", onScroll)
     }, [handleScroll])
     useEffect(() => {
       let cacheState = cacheStates[cacheId]
