@@ -1,15 +1,33 @@
 import { useContext, useRef, useEffect } from "react"
 import CacheContext from "./CacheContext"
-function withKeepAlive(OldComponent, { cacheId = window.location.pathname }) {
+function withKeepAlive(
+  OldComponent,
+  { cacheId = window.location.pathname, scroll = false }
+) {
   return function (props) {
-    const { mount, cacheStates } = useContext(CacheContext)
+    const { mount, cacheStates, handleScroll, dispatch } =
+      useContext(CacheContext)
     const ref = useRef(null)
+    useEffect(() => {
+      if (scroll) {
+        ref.current.addEventListener(
+          "scroll",
+          handleScroll.bind(null, cacheId),
+          true //捕获阶段的接听
+        )
+      }
+    }, [handleScroll])
     useEffect(() => {
       let cacheState = cacheStates[cacheId]
       //真实DOM已经存在了
       if (cacheState && cacheState.doms) {
         let doms = cacheState.doms
         doms.forEach((dom) => ref.current.appendChild(dom))
+        if (scroll) {
+          doms.forEach((dom) => {
+            if (cacheState.scrolls[dom]) dom.scrollTop = cacheState.scrolls[dom]
+          })
+        }
       } else {
         mount({
           cacheId,

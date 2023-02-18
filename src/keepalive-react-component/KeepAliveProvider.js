@@ -13,8 +13,19 @@ function KeepAliveProvider(props) {
     },
     [cacheStates]
   )
+  let handleScroll = useCallback(
+    (cacheId, event) => {
+      if (cacheStates[cacheId]) {
+        let scrolls = cacheStates[cacheId].scrolls
+        scrolls[event.target] = event?.target?.scrollTop
+      }
+    },
+    [cacheStates]
+  )
   return (
-    <CacheContext.Provider value={{ cacheStates, dispatch, mount }}>
+    <CacheContext.Provider
+      value={{ cacheStates, dispatch, mount, handleScroll }}
+    >
       {props.children}
       {Object.values(cacheStates).map(({ cacheId, element }) => (
         <div

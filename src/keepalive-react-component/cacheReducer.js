@@ -10,6 +10,7 @@ function cacheReducer(cacheStates = {}, { type, payload }) {
       return {
         ...cacheStates,
         [cacheId]: {
+          scrolls: {}, //滚动信息保存的对象，默认key是滚动的DOM 值是滚动的位置
           cacheId: payload.cacheId, //缓存ID
           element: payload.element, //要渲染的虚拟DOM
           status: cacheTypes.CREATE, //缓存的状态是创建
