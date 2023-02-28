@@ -1,70 +1,99 @@
-# Getting Started with Create React App
+## 1.介绍
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- 基于 react 开发出来的 react 缓存组件，类似于类似`vue`的`keepalive`包裹`vue-router`的效果功能
 
-## Available Scripts
+## 2. 基本用法
 
-In the project directory, you can run:
+example
 
-### `npm start`
+### 2.1 index.js
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom'
+import Home from './components/Home';
+import UserList from './components/UserList';
+import UserAdd from './components/UserAdd';
+import { KeepAliveProvider, withKeepAlive } from 'keepalive-react-component';
+let KeepAliveHome = withKeepAlive(Home, { cacheId: 'Home'});
+let KeepAliveUserList = withKeepAlive(UserList, { cacheId: 'UserList',scroll:true});
+let KeepAliveUserAdd = withKeepAlive(UserAdd, { cacheId: 'UserAdd' });
+const App = () => {
+  return (
+    <Router  >
+      <KeepAliveProvider>
+        <ul>
+          <li><Link to="/">首页</Link></li>
+          <li><Link to="/list">用户列表</Link></li>
+          <li><Link to="/add">添加用户</Link></li>
+        </ul>
+        <Switch>
+          <Route path={'/'} component={KeepAliveHome} exact />
+          <Route path={'/list'} component={KeepAliveUserList} />
+          <Route path={'/add'} component={KeepAliveUserAdd} />
+        </Switch>
+      </KeepAliveProvider>
+    </Router>
+  )
+}
+ReactDOM.render(<App/>, document.getElementById('root'));
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 2.2 Home.js
 
-### `npm test`
+example\components\Home.js
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+import React from 'react';
+const Home = (props) => {
+    return (
+        <div>
+            <button onClick={() => props.dispatch({ type: 'DESTROY', payload: { cacheId: 'UserAdd' } })}>重置UserAdd</button>
+            <button onClick={() => props.dispatch({ type: 'DESTROY', payload: { cacheId: 'UserList' } })}>重置UserList</button>
+        </div>
+    )
+}
+export default Home;
+```
 
-### `npm run build`
+### 2.3 UserAdd.js
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+example\components\UserAdd.js
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+import React from 'react';
+const UserAdd = ()=>{
+    let [number,setNumber]=React.useState(0);
+    return (
+        <div>
+            用户名:<input/>
+            <hr/>
+            <button onClick={()=>setNumber(number=>number+1)}>{number}</button>
+        </div>
+    )
+}
+export default UserAdd;
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2.4 UserList.js
 
-### `npm run eject`
+example\components\UserList.js
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+import React from 'react';
+import {Link} from 'react-router-dom'
+const UserList = (props)=>{
+    let users = new Array(100).fill(0);
+    return (
+        <ul style={{height:'200px',overflow:'scroll'}}>
+            {
+                users.map((item,index)=>(
+                    <li key={index}><Link to={`/detail/${index}`}>{index}</Link></li>
+                ))
+            }
+        </ul>
+    )
+}
+export default UserList;
+```
